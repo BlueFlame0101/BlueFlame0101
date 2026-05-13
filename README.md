@@ -1,6 +1,6 @@
 ### Malthe Skriver Pedersen
 
-Solo engineer based in Aarhus, working on edge AI for high-trust
+Solo developer based in Aarhus, working on edge AI for high-trust
 environments — the kind of use case where data can't leave the room
 and cloud isn't an option.
 
