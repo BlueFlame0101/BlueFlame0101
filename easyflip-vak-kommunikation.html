@@ -1,0 +1,390 @@
+<title>Easyflip VAK</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap">
+<style>
+  /* Layout: ét højt flipover-ark på et bord. Top-klemme, tre marker-farvede kolonner, spot-guide i bunden. */
+  :root {
+    --room: #d9d4c8;          /* bordet / rummet bag arket */
+    --paper: #fffdf7;
+    --paper-line: #e6e1d3;
+    --ink: #22252b;
+    --ink-soft: #5a5f6b;
+    --clip: #3a3d44;
+    --clip-hi: #6b6f78;
+    --vis: #1f5fd1;           /* blå marker */
+    --vis-soft: #e3ecfd;
+    --aud: #1d8a5a;           /* grøn marker */
+    --aud-soft: #dff3e8;
+    --kin: #d9541e;           /* orange/rød marker */
+    --kin-soft: #fde7da;
+    --shadow: 0 18px 40px rgba(40, 35, 20, .22), 0 2px 6px rgba(40, 35, 20, .12);
+    --display: "Kalam", "Comic Sans MS", "Segoe Print", cursive;
+    --body: "Nunito", "Segoe UI", system-ui, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --room: #1c1e24; --paper: #f6f2e8; --paper-line: #dcd6c6; --ink: #22252b; --ink-soft: #565b66;
+      --clip: #0f1013; --clip-hi: #3f434c;
+      --shadow: 0 18px 44px rgba(0,0,0,.6), 0 2px 6px rgba(0,0,0,.4);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --room: #1c1e24; --paper: #f6f2e8; --paper-line: #dcd6c6; --ink: #22252b; --ink-soft: #565b66;
+    --clip: #0f1013; --clip-hi: #3f434c;
+    --shadow: 0 18px 44px rgba(0,0,0,.6), 0 2px 6px rgba(0,0,0,.4);
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--room);
+    background-image: radial-gradient(ellipse at 50% 0%, rgba(255,255,255,.18), transparent 60%);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 15px;
+    line-height: 1.5;
+    padding-inline: 16px;
+    padding-block: 28px 56px;
+  }
+  .wrap { max-width: 1040px; margin-inline: auto; }
+
+  /* Klemmen i toppen af blokken */
+  .clip {
+    position: relative;
+    height: 34px;
+    margin-inline: 24px;
+    background: linear-gradient(var(--clip-hi), var(--clip));
+    border-radius: 10px 10px 0 0;
+  }
+  .clip::before, .clip::after {
+    content: "";
+    position: absolute; top: 10px;
+    width: 14px; height: 14px; border-radius: 50%;
+    background: var(--paper); box-shadow: inset 0 2px 3px rgba(0,0,0,.35);
+  }
+  .clip::before { left: 18%; }
+  .clip::after { right: 18%; }
+  .clip-label {
+    position: absolute; inset: 0; display: grid; place-items: center;
+    color: #fff; font: 700 11px/1 var(--body); letter-spacing: .18em; text-transform: uppercase;
+  }
+
+  .sheet {
+    background: var(--paper);
+    background-image: repeating-linear-gradient(to bottom, transparent 0 31px, var(--paper-line) 31px 32px);
+    box-shadow: var(--shadow);
+    border-radius: 0 0 6px 6px;
+    padding: 36px clamp(18px, 4vw, 52px) 44px;
+    position: relative;
+    overflow: hidden;
+  }
+  .sheet::after { /* let fold-skygge i toppen */
+    content: ""; position: absolute; left: 0; right: 0; top: 0; height: 60px;
+    background: linear-gradient(rgba(0,0,0,.07), transparent); pointer-events: none;
+  }
+
+  /* Overskrift */
+  .head { display: grid; gap: 10px; margin-bottom: 26px; }
+  .eyebrow { font: 700 12px/1 var(--body); letter-spacing: .16em; text-transform: uppercase; color: var(--ink-soft); }
+  h1 {
+    font-family: var(--display); font-weight: 700;
+    font-size: clamp(30px, 5vw, 46px); line-height: 1.1; margin: 0;
+    text-wrap: balance;
+  }
+  h1 .mark { position: relative; white-space: nowrap; }
+  h1 .mark::after {
+    content: ""; position: absolute; left: -2px; right: -2px; bottom: 4px; height: 12px; z-index: -1;
+    background: var(--c, var(--vis)); opacity: .28; transform: rotate(-1deg); border-radius: 2px;
+  }
+  .lede { max-width: 62ch; margin: 0; font-size: 16px; color: var(--ink); }
+  .lede strong { font-weight: 800; }
+
+  /* De tre kolonner */
+  .cols {
+    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px;
+    margin-top: 10px;
+  }
+  .col { --c: var(--vis); --soft: var(--vis-soft); min-width: 0; display: flex; flex-direction: column; gap: 14px; }
+  .col.aud { --c: var(--aud); --soft: var(--aud-soft); }
+  .col.kin { --c: var(--kin); --soft: var(--kin-soft); }
+
+  .col-head {
+    display: grid; grid-template-columns: 56px 1fr; gap: 12px; align-items: center;
+    padding-bottom: 10px; border-bottom: 4px solid var(--c);
+  }
+  .col-head svg { width: 56px; height: 56px; display: block; }
+  .col-head h2 { margin: 0; font-family: var(--display); font-size: 30px; line-height: 1; color: var(--c); font-weight: 700; }
+  .col-head .sense { font-size: 13px; font-weight: 700; color: var(--ink-soft); letter-spacing: .06em; text-transform: uppercase; }
+
+  .block h3 {
+    margin: 0 0 6px; font: 800 12px/1 var(--body); letter-spacing: .14em; text-transform: uppercase; color: var(--c);
+  }
+  .block p { margin: 0; }
+  .block ul { margin: 0; padding-left: 18px; }
+  .block li { margin-bottom: 4px; }
+  .block li::marker { color: var(--c); }
+
+  .do {
+    background: var(--soft); border-radius: 8px; padding: 12px 14px;
+    position: relative;
+  }
+  .do h3 { color: var(--c); }
+  .do li { margin-bottom: 6px; }
+
+  .words { display: flex; flex-wrap: wrap; gap: 6px; }
+  .words span {
+    font-family: var(--display); font-size: 15px; line-height: 1;
+    padding: 5px 9px; border: 2px solid var(--c); border-radius: 14px 4px 14px 4px; color: var(--c);
+    background: var(--paper);
+  }
+
+  .say {
+    border-left: 4px solid var(--c); padding: 4px 0 4px 12px;
+    font-family: var(--display); font-size: 17px; line-height: 1.3; color: var(--ink);
+  }
+  .say small { display: block; font: 700 11px/1.4 var(--body); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 4px; }
+
+  .avoid { font-size: 14px; color: var(--ink-soft); }
+  .avoid b { color: var(--ink); }
+
+  /* Bunden: spot-guide og husk */
+  .foot {
+    margin-top: 30px; padding-top: 22px; border-top: 3px dashed var(--paper-line);
+    display: grid; grid-template-columns: 1.4fr 1fr; gap: 22px;
+  }
+  .foot h2 { margin: 0 0 10px; font-family: var(--display); font-size: 26px; line-height: 1.1; }
+  .spot { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .spot th, .spot td { text-align: left; padding: 7px 8px; vertical-align: top; border-bottom: 1px solid var(--paper-line); }
+  .spot th { font: 800 11px/1.3 var(--body); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-soft); }
+  .spot td:first-child { font-weight: 800; white-space: nowrap; }
+  .spot .v { color: var(--vis); } .spot .a { color: var(--aud); } .spot .k { color: var(--kin); }
+  .table-wrap { overflow-x: auto; }
+
+  .note {
+    background: var(--paper); border: 2px solid var(--ink); border-radius: 6px; padding: 14px 16px;
+    transform: rotate(.6deg); box-shadow: 3px 3px 0 var(--paper-line);
+  }
+  .note h2 { font-size: 24px; }
+  .note ol { margin: 0; padding-left: 20px; }
+  .note li { margin-bottom: 6px; }
+  .note li strong { font-weight: 800; }
+  .note .fine { margin: 10px 0 0; font-size: 13px; color: var(--ink-soft); }
+
+  .legend {
+    margin-top: 26px; display: flex; flex-wrap: wrap; gap: 10px 22px; justify-content: center;
+    font-family: var(--display); font-size: 22px; line-height: 1;
+  }
+  .legend span { display: inline-flex; align-items: center; gap: 8px; }
+  .legend i { width: 18px; height: 18px; border-radius: 50%; display: inline-block; }
+
+  @media (max-width: 760px) {
+    .cols { grid-template-columns: 1fr; gap: 28px; }
+    .foot { grid-template-columns: 1fr; }
+    .note { transform: none; }
+    .clip { margin-inline: 12px; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .col:hover .col-head svg { transform: rotate(-3deg); transition: transform .25s ease; }
+  }
+</style>
+
+<div class="wrap">
+  <div class="clip" aria-hidden="true"><div class="clip-label">Easyflip</div></div>
+  <article class="sheet">
+    <header class="head">
+      <div class="eyebrow">Kommunikation · De 3 repræsentationssystemer</div>
+      <h1>Sådan rammer du <span class="mark" style="--c: var(--vis)">øjet</span>, <span class="mark" style="--c: var(--aud)">øret</span> og <span class="mark" style="--c: var(--kin)">kroppen</span></h1>
+      <p class="lede">Vi tager verden ind gennem sanserne, og de fleste af os har et <strong>foretrukket system</strong>: nogle tænker i billeder, nogle i lyd og ord, nogle i krop og følelse. Når du taler i modtagerens system, bliver du forstået hurtigere, husket bedre og oplevet som én, der "er på bølgelængde".</p>
+    </header>
+
+    <div class="cols">
+      <!-- VISUEL -->
+      <section class="col vis" aria-labelledby="h-vis">
+        <div class="col-head">
+          <svg viewBox="0 0 64 64" aria-hidden="true">
+            <path d="M6 32 C 18 14, 46 14, 58 32 C 46 50, 18 50, 6 32 Z" fill="none" stroke="var(--c)" stroke-width="4" stroke-linejoin="round"/>
+            <circle cx="32" cy="32" r="10" fill="none" stroke="var(--c)" stroke-width="4"/>
+            <circle cx="32" cy="32" r="4" fill="var(--c)"/>
+            <path d="M14 12 l-4 -5 M50 12 l4 -5 M32 9 v-6" stroke="var(--c)" stroke-width="3" stroke-linecap="round"/>
+          </svg>
+          <div>
+            <h2 id="h-vis">Visuel</h2>
+            <div class="sense">Ser · tænker i billeder</div>
+          </div>
+        </div>
+
+        <div class="block">
+          <h3>Sådan genkender du dem</h3>
+          <ul>
+            <li>Taler hurtigt og i højt tempo, springer gerne mellem emner</li>
+            <li>Blikket søger op, når de tænker</li>
+            <li>Vil have overblik, struktur og "det store billede"</li>
+            <li>Lægger mærke til udseende, farver og orden</li>
+          </ul>
+        </div>
+
+        <div class="block do">
+          <h3>Sådan kommunikerer du bedst</h3>
+          <ul>
+            <li><b>Vis det.</b> Tegn på tavlen, brug diagrammer, skitser og billeder</li>
+            <li><b>Giv det på skrift</b> bagefter: en mail, en slide, en liste</li>
+            <li><b>Hold øjenkontakt</b> og brug levende mimik og gestik</li>
+            <li><b>Kom til pointen</b> og giv overblikket først, detaljer bagefter</li>
+            <li><b>Brug farver og ikoner</b> til at skille ting fra hinanden</li>
+          </ul>
+        </div>
+
+        <div class="block">
+          <h3>Ord der rammer</h3>
+          <div class="words">
+            <span>se</span><span>billede</span><span>klart</span><span>overblik</span><span>fokus</span><span>perspektiv</span><span>tydeligt</span><span>lyst</span>
+          </div>
+        </div>
+
+        <div class="say">
+          <small>Sig fx</small>
+          "Kan du se det for dig?" · "Lad os få et overblik." · "Det står klart nu."
+        </div>
+
+        <p class="avoid"><b>Undgå:</b> lange mundtlige forklaringer uden noget at kigge på. De mister tråden og kigger væk.</p>
+      </section>
+
+      <!-- AUDITIV -->
+      <section class="col aud" aria-labelledby="h-aud">
+        <div class="col-head">
+          <svg viewBox="0 0 64 64" aria-hidden="true">
+            <path d="M20 44 c-8 -6, -10 -22, 2 -30 c 12 -8, 26 0, 24 14 c -1 8, -8 10, -8 18 c 0 6, -6 10, -12 6" fill="none" stroke="var(--c)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M28 30 c 0 -6, 8 -8, 10 -2" fill="none" stroke="var(--c)" stroke-width="4" stroke-linecap="round"/>
+            <path d="M50 20 c 4 6, 4 14, 0 20 M56 14 c 7 10, 7 24, 0 32" fill="none" stroke="var(--c)" stroke-width="3" stroke-linecap="round"/>
+          </svg>
+          <div>
+            <h2 id="h-aud">Auditiv</h2>
+            <div class="sense">Hører · tænker i ord og lyd</div>
+          </div>
+        </div>
+
+        <div class="block">
+          <h3>Sådan genkender du dem</h3>
+          <ul>
+            <li>Taler rytmisk og melodisk, varierer tonefald og tempo</li>
+            <li>Blikket går til siden, hovedet lidt på skrå, når de lytter</li>
+            <li>Husker det, der blev sagt, næsten ordret</li>
+            <li>Forstyrres af støj og tænker gerne højt</li>
+          </ul>
+        </div>
+
+        <div class="block do">
+          <h3>Sådan kommunikerer du bedst</h3>
+          <ul>
+            <li><b>Sig det.</b> Forklar trin for trin med ord, og ring frem for at skrive</li>
+            <li><b>Brug stemmen bevidst:</b> variér tempo, tryk og pauser</li>
+            <li><b>Tal det igennem</b> sammen, og lad dem gentage med egne ord</li>
+            <li><b>Opsummér højt</b> til sidst: "Så det vi har aftalt er …"</li>
+            <li><b>Skab ro</b> uden baggrundsstøj, så ordene kan høres</li>
+          </ul>
+        </div>
+
+        <div class="block">
+          <h3>Ord der rammer</h3>
+          <div class="words">
+            <span>lyder</span><span>høre</span><span>klinger</span><span>tone</span><span>resonans</span><span>siger mig</span><span>lyt</span><span>harmoni</span>
+          </div>
+        </div>
+
+        <div class="say">
+          <small>Sig fx</small>
+          "Hvordan lyder det?" · "Lad os tale det igennem." · "Det klinger rigtigt."
+        </div>
+
+        <p class="avoid"><b>Undgå:</b> kun at sende en tæt slide eller et langt dokument. De vil høre det forklaret og have lov at spørge.</p>
+      </section>
+
+      <!-- KINÆSTETISK -->
+      <section class="col kin" aria-labelledby="h-kin">
+        <div class="col-head">
+          <svg viewBox="0 0 64 64" aria-hidden="true">
+            <path d="M20 58 v-18 l-8 -10 c -2 -3, 2 -7, 5 -4 l 7 7 v-24 c 0 -4, 6 -4, 6 0 v18 m0 -20 c 0 -4, 6 -4, 6 0 v20 m0 -16 c 0 -4, 6 -4, 6 0 v16 m0 -10 c 0 -4, 6 -4, 6 0 v18 c 0 10, -6 16, -14 16 z" fill="none" stroke="var(--c)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M6 24 c 2 -2, 2 -6, 0 -8 M10 30 c 3 -3, 3 -10, 0 -14" fill="none" stroke="var(--c)" stroke-width="3" stroke-linecap="round"/>
+          </svg>
+          <div>
+            <h2 id="h-kin">Kinæstetisk</h2>
+            <div class="sense">Mærker · tænker i krop og følelse</div>
+          </div>
+        </div>
+
+        <div class="block">
+          <h3>Sådan genkender du dem</h3>
+          <ul>
+            <li>Taler langsomt, med pauser, og trækker vejret dybt</li>
+            <li>Blikket går nedad, når de mærker efter</li>
+            <li>Rører ved ting, bevæger sig, sidder sjældent helt stille</li>
+            <li>Beslutter sig ud fra mavefornemmelsen og om det "føles rigtigt"</li>
+          </ul>
+        </div>
+
+        <div class="block do">
+          <h3>Sådan kommunikerer du bedst</h3>
+          <ul>
+            <li><b>Lad dem gøre det.</b> Prøv af, demonstrér, giv noget i hænderne</li>
+            <li><b>Sænk tempoet</b> og giv tid til at mærke efter før svaret</li>
+            <li><b>Brug konkrete eksempler</b> og fortæl, hvad det betyder i praksis</li>
+            <li><b>Vær fysisk til stede:</b> et håndtryk, en gåtur, siddende side om side</li>
+            <li><b>Spørg til oplevelsen</b>, ikke kun til fakta</li>
+          </ul>
+        </div>
+
+        <div class="block">
+          <h3>Ord der rammer</h3>
+          <div class="words">
+            <span>føles</span><span>mærke</span><span>greb</span><span>solidt</span><span>håndtere</span><span>kontakt</span><span>varmt</span><span>tungt</span>
+          </div>
+        </div>
+
+        <div class="say">
+          <small>Sig fx</small>
+          "Hvordan føles det?" · "Lad os prøve det af." · "Har du et godt greb om det?"
+        </div>
+
+        <p class="avoid"><b>Undgå:</b> at presse på for et hurtigt svar eller kun forklare i teori. De skal have fat i det, før det sidder fast.</p>
+      </section>
+    </div>
+
+    <div class="foot">
+      <section aria-labelledby="h-spot">
+        <h2 id="h-spot">Spot systemet på 30 sekunder</h2>
+        <div class="table-wrap">
+          <table class="spot">
+            <thead>
+              <tr><th>Læg mærke til</th><th class="v">Visuel</th><th class="a">Auditiv</th><th class="k">Kinæstetisk</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Sanseord</td><td>se, klart, billede</td><td>lyder, høre, tone</td><td>føles, mærke, greb</td></tr>
+              <tr><td>Tempo</td><td>Hurtigt</td><td>Rytmisk, varieret</td><td>Langsomt, med pauser</td></tr>
+              <tr><td>Blik</td><td>Opad</td><td>Til siden</td><td>Nedad</td></tr>
+              <tr><td>Vejrtrækning</td><td>Højt i brystet</td><td>Midt i brystet</td><td>Dybt i maven</td></tr>
+              <tr><td>Overbevises af</td><td>At se det</td><td>At høre det forklaret</td><td>At prøve det</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <aside class="note" aria-labelledby="h-husk">
+        <h2 id="h-husk">Husk</h2>
+        <ol>
+          <li><strong>Lyt efter deres ord</strong> og brug de samme sanseord tilbage. Det er den hurtigste vej til kontakt.</li>
+          <li><strong>Match først, led bagefter.</strong> Mød dem i deres system, før du tager dem med over i dit.</li>
+          <li><strong>Til en gruppe: brug alle tre.</strong> Vis det, sig det, og lad dem prøve det.</li>
+          <li><strong>Vær fleksibel.</strong> Det er dig, der tilpasser dig modtageren, ikke omvendt.</li>
+        </ol>
+        <p class="fine">Alle bruger alle tre systemer. Præferencen er en tendens, du kan bruge som pejlemærke, ikke en etiket du sætter på folk.</p>
+      </aside>
+    </div>
+
+    <div class="legend" aria-hidden="true">
+      <span><i style="background: var(--vis)"></i>Vis det</span>
+      <span><i style="background: var(--aud)"></i>Sig det</span>
+      <span><i style="background: var(--kin)"></i>Lad dem prøve det</span>
+    </div>
+  </article>
+</div>
